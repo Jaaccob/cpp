@@ -79,22 +79,11 @@ void numberOfWeeks (int table[6][7]){
     numberOfWeek = week;
 }
 
-int numberOfTheWeeks(int day, int current){
-    int week = 0;
-    if (current == 0)
-    {
-        current++;
-    }
-    
-    if(7%current != 0){
-        day = day - 7%current;
-        week ++;
-    }
-    week += (int) day/7;
-    return week;
+int actualyWeek(int day, int current){
+    return (int) (6+day-(current-1))/7;
 }
 
-void show_bar(int col, int row){
+void showBar(int col, int row){
     //Funkcja ma za zadanie wyświetlać górną belkę kalendarza
     mvprintw(2, col-21, "Kalendarz TODO");
     char const *days[] = {"N","P","W","S","C","P","S"};
@@ -112,7 +101,7 @@ void show_bar(int col, int row){
     }
 }
 
-void show_nameMonth(int monthNumber, int col){
+void showNameMonth(int monthNumber, int col){
     int x = col - 21;
     int y = 0;
     switch ((monthNumber-1)%12)
@@ -329,7 +318,14 @@ void showTable(int col, int current){
 }
 
 void openFile(int day, int month, int year, int col){
-    string nameFile = "todo" + to_string(day) + to_string(month) + to_string(year);
+    string nameFile;
+    if(day < 10 and month < 10)
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + "0" + to_string(day);
+    else if (day < 10)
+        nameFile = "todo" + to_string(year) + to_string(month) + "0" + to_string(day);
+    else if (month < 10)
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + to_string(day);
+        
     ifstream file(nameFile + ".txt", ios::in);
     string line;
     if(file.is_open()){
@@ -361,7 +357,16 @@ void openFile(int day, int month, int year, int col){
 }
 
 void createFile(int day, int month, int year, int row){
-    string nameFile = "todo" + to_string(day) + to_string(month) + to_string(year);
+    string nameFile;
+    if(day < 10 and month < 10)
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + "0" + to_string(day);
+    else if (day < 10)
+    {
+        nameFile = "todo" + to_string(year) + to_string(month) + "0" + to_string(day);
+    }else if (month < 10)
+    {
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + to_string(day);
+    }
     string line = write(day, month, year, row); 
     ofstream fileO(nameFile + ".txt", ios::out);
     if(fileO.is_open()){
@@ -371,7 +376,16 @@ void createFile(int day, int month, int year, int row){
 }
 
 string write(int day, int month, int year, int row){
-    string nameFile = "todo" + to_string(day) + to_string(month) + to_string(year);
+    string nameFile;
+    if(day < 10 and month < 10)
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + "0" + to_string(day);
+    else if (day < 10)
+    {
+        nameFile = "todo" + to_string(year) + to_string(month) + "0" + to_string(day);
+    }else if (month < 10)
+    {
+        nameFile = "todo" + to_string(year) + "0" + to_string(month) + to_string(day);
+    }
     ifstream file(nameFile + ".txt", ios::in);
     string line;
     string fileLine;
@@ -382,7 +396,7 @@ string write(int day, int month, int year, int row){
             if (line.compare("\n")){
                 x++;
                 i =0;
-                fileLine += "\n";
+                fileLine.append("\n");
             }
             mvprintw(x,i,"%s",line.c_str());
             fileLine += line;
@@ -429,9 +443,18 @@ string write(int day, int month, int year, int row){
     return line;
 }
 
-void deleteFiles(int day, int month, int year){
+void deleteOldFiles(int day, int month, int year){
     std::string path = "/home/jacob/Academic/VI semestr/cpp/Kalendarz To Do/Kalendarz";
-    string number = to_string(day)+to_string(month) + to_string(year);
+    string number;
+    if(day < 10 and month < 10)
+        number = to_string(year) + "0" + to_string(month) + "0" + to_string(day);
+    else if (day < 10)
+    {
+        number = to_string(year) + to_string(month) + "0" + to_string(day);
+    }else if (month < 10)
+    {
+        number = to_string(year) + "0" + to_string(month) + to_string(day);
+    }
     for (const auto & entry : fs::directory_iterator(path)){
         string file = entry.path();
         if(file.substr(file.length()-4, file.length()-1).compare(".txt") == 0){
@@ -447,7 +470,16 @@ void deleteFiles(int day, int month, int year){
 
 void deleteFile(int day, int month, int year){
     std::string path = "/home/jacob/Academic/VI semestr/cpp/Kalendarz To Do/Kalendarz";
-    string number = to_string(day)+to_string(month) + to_string(year);
+    string number;
+    if(day < 10 and month < 10)
+        number = to_string(year) + "0" + to_string(month) + "0" + to_string(day);
+    else if (day < 10)
+    {
+        number = to_string(year) + to_string(month) + "0" + to_string(day);
+    }else if (month < 10)
+    {
+        number = to_string(year) + "0" + to_string(month) + to_string(day);
+    }
     string file = "todo" + number + ".txt";
     mvprintw(15,0,"Usuwam plik: %s",file.c_str());
     remove(file.c_str());
@@ -460,12 +492,14 @@ void createBox(int x, int y, int w, int h){
     wrefresh(win);
 }
 
-void show_context(int col, int row){
-    mvprintw(row-3,1, "w/s -> góra/dol");
-    mvprintw(row-2,1, "a/d -> lewi/prawo");
+void showContext(int col, int row){
+    mvprintw(row-3, 1, "w/s -> góra/dol");
+    mvprintw(row-2, 1, "a/d -> lewi/prawo");
 
-    mvprintw(row-3, 21, "enter -> wprowadz nowy task");
-    mvprintw(row-2, 20, "ESC -> KONIEC");
+    mvprintw(row-3, 21, "Enter -> wprowadz nowy task");
+    mvprintw(row-2, 20, "Backspace -> usun task");
+
+    mvprintw(row-3, 51, "ESC -> KONIEC");
 }
 
 int main(){
@@ -490,9 +524,16 @@ int main(){
 
     int current = dayNumber(0,1,1900);
     int x = ltm->tm_wday;
-    int y = numberOfTheWeeks(currentD,current);
+    int y = 0;
+    for(int j= 0; j<7; j++){
+        if(currentMonth[0][j] != 0){
+            y = actualyWeek(currentD,j);
+            break;
+        }
+    }
+    
     numberOfWeeks(currentMonth);
-    deleteFile(currentMonth[y][x], currentM, currentY);
+    deleteOldFiles(currentMonth[y][x], currentM, currentY);
     char znak;
     do
     {
@@ -504,10 +545,10 @@ int main(){
         // actualyDay(&y,&x);
         createBox(0,col-23,23,11);
         showCalendar(col,current);
-        show_bar(col, row);
-        show_nameMonth(currentM, col);
+        showBar(col, row);
+        showNameMonth(currentM, col);
         createBox(row - 4, 0, col, 4);
-        show_context(col,row);
+        showContext(col,row);
         znak = getch();
     } while (znak != 27);
     clear();
